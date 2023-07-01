@@ -1,0 +1,38 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Eclipse.App">
+
+    <Application.Styles>
+        <FluentTheme/>
+
+        <Style Selector="TextBox.SettingsBox">
+            <Setter
+                Property="Watermark"
+                Value="输入文本"/>
+            <Setter
+                Property="VerticalAlignment"
+                Value="Center"/>
+            <Setter
+                Property="HorizontalAlignment"
+                Value="Center"/>
+        </Style>
+
+        <Style Selector="TextBlock.Received">
+            <Setter
+                Property="Margin"
+                Value="10"/>
+            <Setter
+                Property="HorizontalAlignment"
+                Value="Left"/>
+        </Style>
+
+        <Style Selector="TextBlock.Sent">
+            <Setter
+                Property="Margin"
+                Value="10"/>
+            <Setter
+                Property="HorizontalAlignment"
+                Value="Right"/>
+        </Style>
+    </Application.Styles>
+</Application>

@@ -1,0 +1,73 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Eclipse.MainWindow"
+        Title="Eclipse"
+        Icon="/Assets/avalonia-logo.ico">
+    <Border>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <StackPanel
+                Name="MessageWindow"
+                Grid.RowSpan="2">
+            </StackPanel>
+
+            <TextBox
+                Name="SendBox"
+                Grid.Column="0"
+                Grid.Row="2"/>
+
+            <TextBlock
+                Name="Exception"
+                Grid.Row="0"
+                Grid.Column="1"/>
+
+            <TextBox
+                Name="Port"
+                Classes="SettingsBox"
+                Grid.Row="1"
+                Grid.Column="1"
+                Watermark="选择端口"
+                HorizontalAlignment="Left"
+                TextChanged="PortChangeEvent"
+                LostFocus="PortChange"/>
+
+            <TextBox
+                Name="SendPort"
+                Classes="SettingsBox"
+                Grid.Row="1"
+                Grid.Column="1"
+                Text="8085"
+                Watermark="发送至端口"
+                HorizontalAlignment="Right"/>
+
+            <Menu
+                Grid.Row="2"
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <MenuItem
+                    Header="发送消息"
+                    Click="SendMessage"/>
+                <MenuItem
+                    Header="yee"/>
+                <MenuItem
+                    Header="yee"/>
+                <MenuItem
+                    Header="yee"/>
+            </Menu>
+        </Grid>
+    </Border>
+</Window>
