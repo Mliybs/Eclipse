@@ -8,7 +8,7 @@ public static class Statics
 
     public static bool ToReceive = true;
 
-    private static IPEndPoint _ip = new(IPAddress.Any, 8082);
+    private static IPEndPoint _ip = new(IPAddress.Any, 8085);
 
     public static IPEndPoint ip
     {
