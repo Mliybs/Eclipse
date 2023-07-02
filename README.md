@@ -1,6 +1,8 @@
 # Eclipse
 .NET实现点对点（P2P）聊天软件
 
+当前版本：v0.1，具体内容请查看更新日志：[Update](/Update.md)
+
 # MlinetlesMessageProtocol（MMP）
 MlinetlesMessageProtocol（MMP）是一种基于UDP协议的应用层协议
 

@@ -8,6 +8,8 @@ public static class Statics
 
     public static bool ToReceive = true;
 
+    public static bool IsNull = true;
+
     private static IPEndPoint _ip = new(IPAddress.Any, 8085);
 
     public static IPEndPoint ip
@@ -17,9 +19,13 @@ public static class Statics
         set => _ip = value;
     }
 
-    public static UdpClient client4 = new(ip.Port, AddressFamily.InterNetwork);
+#nullable disable
 
-    public static UdpClient client6 = new(ip.Port, AddressFamily.InterNetworkV6);
+    public static UdpClient client4;
+
+    public static UdpClient client6;
+
+#nullable restore
 
     public static UdpClient client
     {

@@ -8,7 +8,18 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        BeginReceive(Receiving, ip);
+        try
+        {
+            NewClient();
+
+            IsNull = false;
+
+            BeginReceive(Receiving, ip);
+        }
+        catch
+        {
+            this.GetControl<TextBlock>("Exception").Text = "接收端口被占用！请更换端口！";
+        }
     }
 
     private void Enter(object sender, KeyEventArgs e)
@@ -31,6 +42,13 @@ public partial class MainWindow : Window
 
     private void SendMessage(object sender, RoutedEventArgs e)
     {
+        if (IsNull)
+        {
+            this.GetControl<TextBlock>("Exception").Text = "接收端口被占用！请更换端口！";
+
+            return;
+        }
+
         var text = this.GetControl<TextBox>("SendBox").Text;
 
         this.GetControl<TextBox>("SendBox").Text = string.Empty;
@@ -95,7 +113,11 @@ public partial class MainWindow : Window
 
                         ip.Port = input;
 
+                        ClientClose();
+
                         NewClient();
+
+                        IsNull = false;
 
                         BeginReceive(Receiving, ip);
 
@@ -123,6 +145,12 @@ public partial class MainWindow : Window
                 switch (exc.Message)
                 {
                     case "Permission denied":
+
+                        this.GetControl<TextBlock>("Exception").Text = "无法访问该端口！";
+
+                        break;
+
+                    case "Address already in use":
 
                         this.GetControl<TextBlock>("Exception").Text = "该端口已被占用！";
 
@@ -201,6 +229,11 @@ public partial class MainWindow : Window
             }
             else
                 ToReceive = true;
+        }
+        catch (ObjectDisposedException)
+        {
+            // 在改端口的时候Close（Close内部有Dispose）会直接报错内容被释放了，依靠这一点确定端口更改成功，逆天吧（叉腰）
+            Dispatcher.UIThread.Invoke(() => this.GetControl<TextBlock>("Exception").Text = "端口已更改！");
         }
         catch (Exception e)
         {
