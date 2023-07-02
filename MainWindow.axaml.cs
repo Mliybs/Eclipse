@@ -8,7 +8,25 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        client.BeginReceive(Receiving, (client, ip));
+        BeginReceive(Receiving, ip);
+    }
+
+    private void Enter(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter && sender is TextBox box)
+        {
+            if (e.KeyModifiers == KeyModifiers.Shift)
+            {
+                var index = box.CaretIndex;
+
+                box.Text = box.Text?.Insert(index, "\n");
+
+                box.CaretIndex = ++index;
+            }
+
+            else
+                SendMessage(box, e);
+        }
     }
 
     private void SendMessage(object sender, RoutedEventArgs e)
@@ -30,16 +48,32 @@ public partial class MainWindow : Window
 
             try
             {
-                client.Connect("127.0.0.1", Convert.ToInt32(this.GetControl<TextBox>("SendPort").Text));
+                // client.Connect(this.GetControl<TextBox>("SendIP").Text ?? string.Empty, Convert.ToInt32(this.GetControl<TextBox>("SendPort").Text));
+
+                client.SendAsync(Encoding.UTF8.GetBytes(content), Encoding.UTF8.GetByteCount(content), this.GetControl<TextBox>("SendIP").Text ?? string.Empty, Convert.ToInt32(this.GetControl<TextBox>("SendPort").Text));
+
+                this.GetControl<StackPanel>("MessageWindow").Children.Add(block);
+
+                this.GetControl<ScrollViewer>("Scroll").ScrollToEnd();
+
+                this.GetControl<TextBlock>("Exception").Text = string.Empty;
             }
-            catch
+            catch (FormatException)
             {
                 this.GetControl<TextBlock>("Exception").Text = "请输入0至65535之间的数！";
             }
-
-            client.BeginSend(Encoding.UTF8.GetBytes(content), Encoding.UTF8.GetByteCount(content), Sending, client);
-
-            this.GetControl<StackPanel>("MessageWindow").Children.Add(block);
+            catch (OverflowException)
+            {
+                this.GetControl<TextBlock>("Exception").Text = "请输入0至65535之间的数！";
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                this.GetControl<TextBlock>("Exception").Text = "请输入0至65535之间的数！";
+            }
+            catch (Exception)
+            {
+                this.GetControl<TextBlock>("Exception").Text = "请输入正确的IP！";
+            }
         }
     }
 
@@ -61,9 +95,9 @@ public partial class MainWindow : Window
 
                         ip.Port = input;
 
-                        client = new(ip);
+                        NewClient();
 
-                        client.BeginReceive(Receiving, (client, ip));
+                        BeginReceive(Receiving, ip);
 
                         this.GetControl<TextBlock>("Exception").Text = string.Empty;
 
@@ -108,7 +142,17 @@ public partial class MainWindow : Window
             finally
             {
                 textchanged = false;
+
+                ToReceive = false;
             }
+        }
+    }
+
+    private void IPv6Change(object sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox box)
+        {
+            ipv6 = box.IsChecked ?? false;
         }
     }
 
@@ -121,8 +165,6 @@ public partial class MainWindow : Window
             var client = state;
 
             var result = client!.EndSend(ar);
-
-            Console.WriteLine($"已发送{result}个字节");
         }
     }
 
@@ -132,7 +174,7 @@ public partial class MainWindow : Window
         {
             var state = ar.AsyncState as (UdpClient client, IPEndPoint ip)?;
 
-            if (state is not null)
+            if (ToReceive && state is not null)
             {
                 var client = state?.client;
 
@@ -151,18 +193,18 @@ public partial class MainWindow : Window
                         block.Classes.Add("Received");
                         
                         this.GetControl<StackPanel>("MessageWindow").Children.Add(block);
+
+                        this.GetControl<ScrollViewer>("Scroll").ScrollToEnd();
                     });
 
-                Console.WriteLine(Encoding.UTF8.GetString(result[..18]));
-
-                Console.WriteLine(Encoding.UTF8.GetString(result));
-
-                Statics.client.BeginReceive(Receiving, (Statics.client, ip));
+                client.BeginReceive(Receiving, (client, ip));
             }
+            else
+                ToReceive = true;
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            Dispatcher.UIThread.Invoke(() => this.GetControl<TextBlock>("Exception").Text = e.Message);
         }
     }
 }
