@@ -209,17 +209,7 @@ public partial class MainWindow : Window
 
                 var ip = state?.ip;
 
-                Console.WriteLine(ip?.Address);
-
-                Console.WriteLine(ip?.Port);
-
-                Console.WriteLine("yee");
-
                 var result = client!.EndReceive(ar, ref ip);
-
-                Console.WriteLine(ip?.Address);
-
-                Console.WriteLine(ip?.Port);
 
                 if (Encoding.UTF8.GetString(result[..18]) == "MlineMesProto_Text")
                     Dispatcher.UIThread.Invoke(() =>
@@ -236,19 +226,7 @@ public partial class MainWindow : Window
                         this.GetControl<ScrollViewer>("Scroll").ScrollToEnd();
                     });
 
-                Console.WriteLine(ip?.Address);
-
-                Console.WriteLine(ip?.Port);
-
-                Console.WriteLine("ouo");
-
                 client.BeginReceive(Receiving, (client, ip));
-
-                Console.WriteLine(ip?.Address);
-
-                Console.WriteLine(ip?.Port);
-
-                Console.WriteLine("");
             }
             else
                 ToReceive = true;
