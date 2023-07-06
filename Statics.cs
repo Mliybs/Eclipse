@@ -61,4 +61,58 @@ public static class Statics
     }
 
     public const string MMPText = "MlineMesProto_Text";
+
+    public const string MMPFile = "MlineMesProto_File";
+}
+
+public class MMPBuilder
+{
+    public MMPBuilder(MMPIdentifier identifier) => this.Append(identifier.ToString());
+
+    private List<byte[]> data = new();
+
+    private int count;
+
+    public MMPBuilder Append(byte[] bytes)
+    {
+        data.Add(bytes);
+
+        count += bytes.Length;
+
+        return this;
+    }
+
+    public MMPBuilder Append(string content)
+    {
+        var bytes = Encoding.UTF8.GetBytes(content);
+
+        data.Add(bytes);
+
+        count += bytes.Length;
+
+        return this;
+    }
+
+    public int Count
+    {
+        get => count;
+    }
+
+    public static implicit operator byte[](MMPBuilder builder)
+    {
+        IEnumerable<byte> list = new byte[0];
+
+        builder.data.ForEach(x => list = list.Concat(x));
+
+        return list.ToArray();
+    }
+
+    public static implicit operator int(MMPBuilder builder) => builder.Count;
+}
+
+public enum MMPIdentifier
+{
+    MlineMesProto_Text,
+
+    MlineMesProto_File
 }

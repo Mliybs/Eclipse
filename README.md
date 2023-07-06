@@ -1,10 +1,20 @@
 # Eclipse
 .NET实现点对点（P2P）聊天软件
 
-当前版本：v0.1，具体内容请查看更新日志：[Update](/Update.md)
+当前版本：v0.2，具体内容请查看更新日志：[Update](/Update.md)
+
+# 鸣谢
+[NETCore.Encrypt](https://github.com/myloveCc/NETCore.Encrypt)，采用MIT协议
 
 # MlinetlesMessageProtocol（MMP）
 MlinetlesMessageProtocol（MMP）是一种基于UDP协议的应用层协议
+
+## MMP0.2
+MMP初步完整版，由以下两部分组成：
+
+1. MMP请求头
+
+2. MMP数据
 
 ## MMP0.1
 测试使用的MMP协议，由以下两部分组成：

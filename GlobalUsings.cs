@@ -45,3 +45,8 @@ global using Avalonia.VisualTree;
 global using Avalonia.Threading;
 
 global using static Eclipse.Statics;
+
+global using NETCore.Encrypt;
+global using NETCore.Encrypt.Shared;
+global using NETCore.Encrypt.Internal;
+global using NETCore.Encrypt.Extensions;

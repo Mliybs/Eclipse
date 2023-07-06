@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectCapability Include="Avalonia"/>
+    <ProjectCapability Include="Avalonia" />
     <TrimmerRootAssembly Include="Avalonia.Themes.Fluent" />
   </ItemGroup>
 
@@ -22,6 +22,7 @@
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.0-rc1.1" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.0-rc1.1" />
     <PackageReference Include="Avalonia.Themes.Simple" Version="11.0.0-rc1.1" />
+    <PackageReference Include="NETCore.Encrypt" Version="2.1.1" />
   </ItemGroup>
 
   <ItemGroup>
