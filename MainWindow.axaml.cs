@@ -8,6 +8,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        // EncryptProvider.AESEncrypt(new byte[] { 0xb2 }, EncryptProvider.CreateAesKey().Key, "0000000000000000");
+
         try
         {
             NewClient();
@@ -55,7 +57,9 @@ public partial class MainWindow : Window
 
         if (!string.IsNullOrEmpty(text))
         {
-            var content = new MMPBuilder(MMPIdentifier.MlineMesProto_Text)
+            // var key = this.GetControl<TextBox>("EnKey").Text;
+
+            var content = new MMPBuilder(new(MMPIdentifier.MlineMesProto_Text)/* , key */)
                 .Append(text);
 
             var block = new TextBlock()
@@ -89,9 +93,13 @@ public partial class MainWindow : Window
             {
                 this.GetControl<TextBlock>("Exception").Text = "请输入0至65535之间的数！";
             }
-            catch (Exception)
+            catch (ArgumentException exc)
             {
-                this.GetControl<TextBlock>("Exception").Text = "请输入正确的IP！";
+                this.GetControl<TextBlock>("Exception").Text = $"参数错误！：{exc.Message}";
+            }
+            catch (Exception exc)
+            {
+                this.GetControl<TextBlock>("Exception").Text = exc.Message;
             }
         }
     }
@@ -177,12 +185,52 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void SendFile(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem)
+        {
+            using var file = (await StorageProvider.OpenFilePickerAsync(new()
+            {
+                Title = "打开文件",
+                
+                AllowMultiple = false
+            })).SingleOrDefault();
+
+            if (file is null)
+                this.GetControl<TextBlock>("Exception").Text = "未选择文件！";
+
+            else
+            {
+                var path = file.Path.ToString().Replace("file://", string.Empty).Replace("content://", string.Empty);
+
+                var content = new MMPBuilder
+                (
+                    new
+                    (
+                        MMPIdentifier.MlineMesProto_File,
+                        (
+                            file.Name,
+                            new FileInfo(path).Length
+                        )
+                    )
+                ).Append(File.ReadAllBytes(path));
+
+                client.Send(content, content, this.GetControl<TextBox>("SendIP").Text ?? string.Empty, Convert.ToInt32(this.GetControl<TextBox>("SendPort").Text));
+            }
+        }
+    }
+
     private void IPv6Change(object sender, RoutedEventArgs e)
     {
         if (sender is CheckBox box)
         {
             ipv6 = box.IsChecked ?? false;
         }
+    }
+
+    private void GenerateKey(object sender, RoutedEventArgs e)
+    {
+        this.GetControl<TextBox>("NewKey").Text = EncryptProvider.CreateAesKey().Key;
     }
 
     public void Sending(IAsyncResult ar)
@@ -203,7 +251,9 @@ public partial class MainWindow : Window
         {
             var state = ar.AsyncState as (UdpClient client, IPEndPoint ip)?;
 
-            if (ToReceive && state is not null)
+            // var key = Dispatcher.UIThread.Invoke(() => this.GetControl<TextBox>("DeKey").Text);
+
+            if (state is not null)
             {
                 var client = state?.client;
 
@@ -211,30 +261,111 @@ public partial class MainWindow : Window
 
                 var result = client!.EndReceive(ar, ref ip);
 
-                if (Encoding.UTF8.GetString(result[..18]) == "MlineMesProto_Text")
-                    Dispatcher.UIThread.Invoke(() =>
+                // result = EncryptProvider.AESDecrypt(result, key, "0000000000000000");
+
+                if (Encoding.UTF8.GetString(result[..14]) != "MlineMesProto_" || result.Length < 17)
+                {
+                    Dispatcher.UIThread.Invoke(() => this.GetControl<TextBlock>("Exception").Text = "接收到了无法解析的消息！");
+                }
+                else
+                {
+                    int size;
+
+                    if (!int.TryParse(Encoding.UTF8.GetString(result[14..17]), out size) || result.Length < 17 + size)
+                        Dispatcher.UIThread.Invoke(() => this.GetControl<TextBlock>("Exception").Text = "接收到了不合法的MMP消息！");
+
+                    else
                     {
-                        var block = new TextBlock()
+                        var header = JObject.Parse(Encoding.UTF8.GetString(result[17..(17 + size)]));
+
+                        switch (header["Type"].Value<string>())
                         {
-                            Text = Encoding.UTF8.GetString(result[18..])
-                        };
+                            case "Text":
 
-                        block.Classes.Add("Received");
+                                Dispatcher.UIThread.Invoke(() =>
+                                {
+                                    var block = new TextBlock()
+                                    {
+                                        Text = Encoding.UTF8.GetString(result[(17 + size)..])
+                                    };
+
+                                    block.Classes.Add("Received");
+                                    
+                                    this.GetControl<StackPanel>("MessageWindow").Children.Add(block);
+
+                                    this.GetControl<ScrollViewer>("Scroll").ScrollToEnd();
+                                });
+
+                                break;
+
+                            case "File":
+
+                                if (header["FileName"].Value<string>() is null || header["FileSize"].Value<long?>() is null)
+                                {
+                                    Dispatcher.UIThread.Invoke(() => this.GetControl<TextBlock>("Exception").Text = "接收到了不合法的MMP文件消息！");
+
+                                    break;
+                                }
+
+                                Dispatcher.UIThread.Invoke(async () =>
+                                {
+                                    using var file = await StorageProvider.SaveFilePickerAsync(new()
+                                    {
+                                        SuggestedFileName = header["FileName"].Value<string>()
+                                    });
+
+                                    if (file is null)
+                                        this.GetControl<TextBlock>("Exception").Text = "未选择路径，消息保存失败！";
+
+                                    else
+                                    {
+                                        using var stream = await file.OpenWriteAsync();
+
+                                        stream.Write(result[(17 + size)..]);
+                                    }
+                                });
+
+                                break;
+
+                            default:
+
+                                Dispatcher.UIThread.Invoke(() => this.GetControl<TextBlock>("Exception").Text = "接收到了不合法的MMP消息！");
+
+                                break;
+                        }
+                    }
+                }
+
+                // if (Encoding.UTF8.GetString(result[..18]) == "MlineMesProto_Text")
+                //     Dispatcher.UIThread.Invoke(() =>
+                //     {
+                //         var block = new TextBlock()
+                //         {
+                //             Text = Encoding.UTF8.GetString(result[18..])
+                //         };
+
+                //         block.Classes.Add("Received");
                         
-                        this.GetControl<StackPanel>("MessageWindow").Children.Add(block);
+                //         this.GetControl<StackPanel>("MessageWindow").Children.Add(block);
 
-                        this.GetControl<ScrollViewer>("Scroll").ScrollToEnd();
-                    });
+                //         this.GetControl<ScrollViewer>("Scroll").ScrollToEnd();
+                //     });
 
                 client.BeginReceive(Receiving, (client, ip));
             }
-            else
-                ToReceive = true;
         }
         catch (ObjectDisposedException)
         {
             // 在改端口的时候Close（Close内部有Dispose）会直接报错内容被释放了，依靠这一点确定端口更改成功，逆天吧（叉腰）
             Dispatcher.UIThread.Invoke(() => this.GetControl<TextBlock>("Exception").Text = "端口已更改！");
+        }
+        catch (InvalidOperationException)
+        {
+            Dispatcher.UIThread.Invoke(() => this.GetControl<TextBlock>("Exception").Text = "执行线程错误！");
+        }
+        catch (JsonReaderException)
+        {
+            Dispatcher.UIThread.Invoke(() => this.GetControl<TextBlock>("Exception").Text = "接收到了不合法的MMP消息！");
         }
         catch (Exception e)
         {

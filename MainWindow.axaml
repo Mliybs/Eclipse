@@ -39,32 +39,27 @@
                 Grid.Row="0"
                 Grid.Column="1"/>
 
-            <TextBox
-                Name="Port"
-                Classes="SettingsBox"
+            <Menu
                 Grid.Row="1"
                 Grid.Column="1"
-                Watermark="接收消息端口"
-                HorizontalAlignment="Left"
-                TextChanged="PortChangeEvent"
-                LostFocus="PortChange"/>
-
-            <TextBox
-                Name="SendIP"
-                Classes="SettingsBox"
-                Grid.Row="1"
-                Grid.Column="1"
-                Text="127.0.0.1"
-                Watermark="发送至IP"/>
-
-            <TextBox
-                Name="SendPort"
-                Classes="SettingsBox"
-                Grid.Row="1"
-                Grid.Column="1"
-                Text="8085"
-                Watermark="发送至端口"
-                HorizontalAlignment="Right"/>
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <CheckBox
+                    Content="开启加密（预定）"/>
+                <MenuItem
+                    Header="密钥生成">
+                    <Button
+                        Content="点击生成密钥"
+                        Click="GenerateKey"/>
+                    <TextBox
+                        Name="NewKey"
+                        Text="密钥生成处"
+                        IsReadOnly="True"/>
+                </MenuItem>
+                <MenuItem
+                    Header="发送文件"
+                    Click="SendFile"/>
+            </Menu>
 
             <Menu
                 Grid.Row="2"
@@ -78,9 +73,44 @@
                     Content="切换至IPv6"
                     IsCheckedChanged="IPv6Change"/>
                 <MenuItem
-                    Header="yee"/>
+                    Header="加密设置">
+                    <TextBox
+                        Name="EnKey"
+                        Classes="SettingsBox"
+                        Watermark="加密密钥"/>
+
+                    <TextBox
+                        Name="IV"
+                        Classes="SettingsBox"
+                        Watermark="向量（未使用）"/>
+
+                    <TextBox
+                        Name="DeKey"
+                        Classes="SettingsBox"
+                        Watermark="解密密钥"/>
+                </MenuItem>
                 <MenuItem
-                    Header="yee"/>
+                    Header="发送设置">
+
+                    <TextBox
+                        Name="Port"
+                        Classes="SettingsBox"
+                        Watermark="接收消息端口"
+                        TextChanged="PortChangeEvent"
+                        LostFocus="PortChange"/>
+
+                    <TextBox
+                        Name="SendIP"
+                        Classes="SettingsBox"
+                        Text="127.0.0.1"
+                        Watermark="发送至IP"/>
+
+                    <TextBox
+                        Name="SendPort"
+                        Classes="SettingsBox"
+                        Text="8085"
+                        Watermark="发送至端口"/>
+                </MenuItem>
             </Menu>
         </Grid>
     </Border>

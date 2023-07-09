@@ -43,6 +43,7 @@ global using Avalonia.Interactivity;
 global using Avalonia.Controls.Presenters;
 global using Avalonia.VisualTree;
 global using Avalonia.Threading;
+global using Avalonia.Platform.Storage;
 
 global using static Eclipse.Statics;
 
@@ -50,3 +51,8 @@ global using NETCore.Encrypt;
 global using NETCore.Encrypt.Shared;
 global using NETCore.Encrypt.Internal;
 global using NETCore.Encrypt.Extensions;
+
+global using static Nanoid.Nanoid;
+
+global using Newtonsoft.Json;
+global using Newtonsoft.Json.Linq;
